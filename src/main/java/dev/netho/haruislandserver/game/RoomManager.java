@@ -51,4 +51,14 @@ public class RoomManager {
         }
         return null;
     }
+
+    public Room getRoomByPlayer(Player player) {
+        for (Room room : rooms) {
+            if (room.getPlayers().contains(player)) {
+                return room;
+            }
+        }
+        return null;
+    }
+
 }

@@ -103,8 +103,12 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         var removePlayerPacket = new RemovePlayerPacket(player.getUuid());
         broadcast(removePlayerPacket, session);
 
+        Room playerRoom = roomManager.getRoomByPlayer(player);
+
+        roomManager.removePlayerFromRoom(player, playerRoom);
         sessions.remove(session.getId());
         playerManager.removePlayer(session.getId());
+
     }
 
 }
