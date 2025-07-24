@@ -76,6 +76,8 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
             String nickname = rootNode.get("nickname").asText();
 
+            nickname = nickname.substring(0, 16);
+
             Player player = playerManager.createPlayer(session.getId(), nickname);
             System.out.println("[Server] New player: " + player.getUuid() + ".");
 
