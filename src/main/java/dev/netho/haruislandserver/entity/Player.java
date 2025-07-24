@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public class Player {
     private final UUID uuid;
-    private String name;
+    private final String name;
     float[] position = new float[2];
     float[] destination = new float[2];
 

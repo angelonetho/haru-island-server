@@ -23,23 +23,9 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        String name = "Player" + session.getId().substring(0, 5);
+        System.out.println("Nova sessão");
+
         sessions.put(session.getId(), session);
-
-        Player player = playerManager.createPlayer(session.getId(), name);
-        System.out.println("[Server] New player: " + player.getUuid() + ".");
-
-        var playerPacket = new PlayerPacket(player);
-        session.sendMessage(new TextMessage(objectMapper.writeValueAsString(playerPacket)));
-
-        Room room = roomManager.getRoom("Haru Island");
-        roomManager.addPlayerToRoom(player, room);
-
-        var roomPacket = new RoomPacket(room);
-        session.sendMessage(new TextMessage(objectMapper.writeValueAsString(roomPacket)));
-
-        var addPlayerPacket = new AddPlayerPacket(player);
-        broadcast(addPlayerPacket, session);
 
     }
 
@@ -84,6 +70,26 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
             var chatMessagePacket = new ChatMessagePacket(playerUuid, chatMessage);
             broadcast(chatMessagePacket, session);
+        }
+
+        if ("NEW_CONNECTION".equals(packetType)) {
+
+            String nickname = rootNode.get("nickname").asText();
+
+            Player player = playerManager.createPlayer(session.getId(), nickname);
+            System.out.println("[Server] New player: " + player.getUuid() + ".");
+
+            var playerPacket = new PlayerPacket(player);
+            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(playerPacket)));
+
+            Room room = roomManager.getRoom("Haru Island");
+            roomManager.addPlayerToRoom(player, room);
+
+            var roomPacket = new RoomPacket(room);
+            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(roomPacket)));
+
+            var addPlayerPacket = new AddPlayerPacket(player);
+            broadcast(addPlayerPacket, session);
         }
     }
 

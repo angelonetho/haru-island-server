@@ -8,4 +8,5 @@ public enum PacketType {
     REMOVE_PLAYER,
     CHAT_MESSAGE,
     ROOM,
+    NEW_CONNECTION,
 }
