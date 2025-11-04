@@ -100,6 +100,13 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             if (session.getId().equals(excludeSession.getId())) {
                 continue;
             }
+
+            if (!session.isOpen()) {
+                sessions.remove(session.getId());
+                playerManager.removePlayer(session.getId());
+                continue;
+            }
+
             session.sendMessage(new TextMessage(objectMapper.writeValueAsString(packet)));
         }
     }
