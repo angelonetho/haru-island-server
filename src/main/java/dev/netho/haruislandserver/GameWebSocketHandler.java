@@ -1,8 +1,8 @@
 package dev.netho.haruislandserver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.netho.haruislandserver.entity.Room;
 import dev.netho.haruislandserver.entity.Player;
+import dev.netho.haruislandserver.entity.Room;
 import dev.netho.haruislandserver.game.PlayerManager;
 import dev.netho.haruislandserver.game.RoomManager;
 import dev.netho.haruislandserver.packet.*;
@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class GameWebSocketHandler extends TextWebSocketHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final PlayerManager playerManager= new PlayerManager();
+    private final PlayerManager playerManager = new PlayerManager();
     private final RoomManager roomManager = new RoomManager();
     private final ConcurrentHashMap<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
 
@@ -102,35 +102,27 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             }
 
             if (!session.isOpen()) {
-                Player player = playerManager.getPlayer(session.getId());
-
-                var removePlayerPacket = new RemovePlayerPacket(player.getUuid());
-                broadcast(removePlayerPacket, session);
-
-                Room playerRoom = roomManager.getRoomByPlayer(player);
-
-                roomManager.removePlayerFromRoom(player, playerRoom);
-                sessions.remove(session.getId());
-                playerManager.removePlayer(session.getId());
-                continue;
+                handleClosedSession(session);
+            } else {
+                session.sendMessage(new TextMessage(objectMapper.writeValueAsString(packet)));
             }
-
-            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(packet)));
         }
     }
 
-    @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+    private void handleClosedSession(WebSocketSession session) throws IOException {
         Player player = playerManager.getPlayer(session.getId());
-
         var removePlayerPacket = new RemovePlayerPacket(player.getUuid());
         broadcast(removePlayerPacket, session);
 
         Room playerRoom = roomManager.getRoomByPlayer(player);
-
         roomManager.removePlayerFromRoom(player, playerRoom);
         sessions.remove(session.getId());
         playerManager.removePlayer(session.getId());
+    }
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        handleClosedSession(session);
 
     }
 
