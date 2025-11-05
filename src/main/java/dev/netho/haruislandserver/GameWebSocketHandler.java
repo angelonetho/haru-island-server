@@ -12,6 +12,8 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -96,16 +98,32 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     }
 
     private void broadcast(Packet packet, WebSocketSession excludeSession) throws IOException {
+        String message = objectMapper.writeValueAsString(packet);
+        List<WebSocketSession> closedSessions = new ArrayList<>();
+
         for (WebSocketSession session : sessions.values()) {
+
             if (session.getId().equals(excludeSession.getId())) {
                 continue;
             }
 
             if (!session.isOpen()) {
-                handleClosedSession(session);
-            } else {
-                session.sendMessage(new TextMessage(objectMapper.writeValueAsString(packet)));
+                closedSessions.add(session);
+                continue;
             }
+
+            synchronized (session) {
+                try {
+                    session.sendMessage(new TextMessage(message));
+                } catch (IOException e) {
+                    System.out.println("[Server] Error sending packet: " + e.getMessage());
+                    closedSessions.add(session);
+                }
+            }
+        }
+
+        for (WebSocketSession session : closedSessions) {
+            handleClosedSession(session);
         }
     }
 
