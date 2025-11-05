@@ -129,15 +129,31 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
+    private void cleanupSession(WebSocketSession session) {
+        try {
+            Player player = playerManager.getPlayer(session.getId());
+
+            if (player != null) {
+                Room playerRoom = roomManager.getRoomByPlayer(player);
+                if (playerRoom != null) {
+                    roomManager.removePlayerFromRoom(player, playerRoom);
+                }
+                playerManager.removePlayer(session.getId());
+            }
+            sessions.remove(session.getId());
+        } catch (Exception e) {
+            System.out.println("[Server] Error cleaning up session: " + e.getMessage());
+        }
+    }
+
     private void handleClosedSession(WebSocketSession session) throws IOException {
         Player player = playerManager.getPlayer(session.getId());
-        var removePlayerPacket = new RemovePlayerPacket(player.getUuid());
-        broadcast(removePlayerPacket, session);
 
-        Room playerRoom = roomManager.getRoomByPlayer(player);
-        roomManager.removePlayerFromRoom(player, playerRoom);
-        sessions.remove(session.getId());
-        playerManager.removePlayer(session.getId());
+        if (player != null) {
+            var removePlayerPacket = new RemovePlayerPacket(player.getUuid());
+            broadcast(removePlayerPacket, session);
+        }
+        cleanupSession(session);
     }
 
     @Override
