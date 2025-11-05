@@ -128,7 +128,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         }
 
         for (WebSocketSession session : closedSessions) {
-            handleClosedSession(session);
+            cleanupSession(session);
         }
     }
 
