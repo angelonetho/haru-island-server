@@ -114,7 +114,9 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
             synchronized (session) {
                 try {
-                    session.sendMessage(new TextMessage(message));
+                    if (session.isOpen()) {
+                        session.sendMessage(new TextMessage(message));
+                    }
                 } catch (IOException e) {
                     System.out.println("[Server] Error sending packet: " + e.getMessage());
                     closedSessions.add(session);
