@@ -22,12 +22,14 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     private final PlayerManager playerManager = new PlayerManager();
     private final RoomManager roomManager = new RoomManager();
     private final ConcurrentHashMap<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Object> sessionLocks = new ConcurrentHashMap<>();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         System.out.println("Nova sessão");
 
         sessions.put(session.getId(), session);
+        sessionLocks.put(session.getId(), new Object());
 
     }
 
@@ -112,7 +114,8 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
                 continue;
             }
 
-            synchronized (session) {
+            Object lock = sessionLocks.get(session.getId());
+            synchronized (lock) {
                 try {
                     if (session.isOpen()) {
                         session.sendMessage(new TextMessage(message));
@@ -141,6 +144,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
                 playerManager.removePlayer(session.getId());
             }
             sessions.remove(session.getId());
+            sessionLocks.remove(session.getId());
         } catch (Exception e) {
             System.out.println("[Server] Error cleaning up session: " + e.getMessage());
         }
