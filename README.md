@@ -125,12 +125,12 @@ A validação até aqui foi manual, conectando o cliente macOS ao servidor. A ú
 
 | | |
 |---|---|
-| Linguagem | Java (compilação configurada em `source`/`target` 24) |
+| Linguagem | Java 21 |
 | Framework | Spring Boot 3.5.3 |
 | Rede | `spring-boot-starter-websocket` (WebSocket cru, sem STOMP/SockJS) |
 | Serialização | Jackson |
 | Build | Maven Wrapper |
-| Deploy | Container Docker (build multi-stage) no Render |
+| Deploy | Container Docker no Render — build multi-stage, `eclipse-temurin:21-jdk` para compilar e `21-jre` para rodar |
 
 Duas dependências no `pom.xml`. É o projeto inteiro.
 
@@ -140,7 +140,7 @@ Duas dependências no `pom.xml`. É o projeto inteiro.
 ./mvnw spring-boot:run
 ```
 
-O servidor sobe na porta 8080 e o endpoint fica em `ws://localhost:8080/ws/game`. O `maven-compiler-plugin` está configurado com `source`/`target` 24, então a build local exige um JDK 24.
+O servidor sobe na porta 8080 e o endpoint fica em `ws://localhost:8080/ws/game`. A build exige um JDK 21.
 
 Dá para testar sem o cliente, com qualquer ferramenta de linha de comando para WebSocket:
 
